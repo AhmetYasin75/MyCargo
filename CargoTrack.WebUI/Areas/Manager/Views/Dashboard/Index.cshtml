@@ -1,0 +1,59 @@
+﻿@using CargoTrack.DTO.DTOs.DashboardDtos
+@using CargoTrack.WebUI.Helpers
+@using CargoTrack.WebUI.Models
+@model ManagerDashboardDto
+@{
+    ViewData["Title"] = "Şube Paneli";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    // Neden: Admin paneliyle aynı kart modeli; sadece şubeye ait rakamlar.
+    var cards = new List<DashboardCardModel>
+    {
+        new() { Title = "Bugün Gelen", Value = Model.TodayIncomingCount.ToString(), Hint = "Şubeye ulaşan", CssClass = "text-bg-primary" },
+        new() { Title = "Bugün Çıkan", Value = Model.TodayOutgoingCount.ToString(), Hint = "Şubeden ayrılan", CssClass = "text-bg-info" },
+        new() { Title = "Dağıtımda", Value = Model.OutForDeliveryCount.ToString(), Hint = "Şu an kuryede", CssClass = "text-bg-warning" },
+        new() { Title = "Bugün Teslim", Value = Model.DeliveredTodayCount.ToString(), Hint = "Başarıyla teslim", CssClass = "text-bg-success" },
+        new() { Title = "Geciken", Value = Model.OverdueCount.ToString(), Hint = "Tahmini tarihi geçti", CssClass = Model.OverdueCount > 0 ? "text-bg-danger" : "text-bg-secondary", Url = "/Cargo/Index?scope=Active" },
+        new() { Title = "Sorunlu", Value = Model.ProblemCount.ToString(), Hint = "Teslim edilemedi / iade", CssClass = Model.ProblemCount > 0 ? "text-bg-danger" : "text-bg-secondary", Url = "/Cargo/Index?scope=Problem" }
+    };
+}
+
+<h3>Şube Paneli <small class="text-muted">@Model.BranchName</small></h3>
+
+<div class="row row-cols-2 row-cols-md-3 g-3 mb-4">
+    @foreach (var card in cards)
+    {
+        <div class="col">
+            @await Html.PartialAsync("~/Views/Shared/Dashboard/_StatCard.cshtml", card)
+        </div>
+    }
+</div>
+
+<h5>Son Hareketler</h5>
+<table class="table table-sm table-striped">
+    <thead>
+        <tr>
+            <th>Tarih</th>
+            <th>Takip No</th>
+            <th>Durum</th>
+            <th>Açıklama</th>
+            <th>İşlemi Yapan</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var m in Model.RecentMovements)
+        {
+            <tr>
+                <td>@m.MovementDate.ToString("dd.MM.yyyy HH:mm")</td>
+                <td>@m.TrackCode</td>
+                <td>@EnumDisplay.Status(m.OldStatus) → @EnumDisplay.Status(m.NewStatus)</td>
+                <td>@m.Description</td>
+                <td>@m.UserName</td>
+            </tr>
+        }
+        @if (!Model.RecentMovements.Any())
+        {
+            <tr><td colspan="5" class="text-muted">Henüz hareket yok.</td></tr>
+        }
+    </tbody>
+</table>

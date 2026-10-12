@@ -1,0 +1,36 @@
+﻿@using CargoTrack.DTO.DTOs.EmployeeDtos
+@model UpdateEmployeeDto
+@{
+    ViewData["Title"] = "Personel Güncelle";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h3>Personel Güncelle</h3>
+
+<form asp-area="Admin" asp-controller="Employee" asp-action="Update" method="post">
+    <input type="hidden" asp-for="Id" />
+
+    @* Neden: Ad bilgi amaçlı gösterilir, değiştirilemez. Hata olup form yeniden açılırsa kaybolmasın diye hidden taşınır. *@
+    <input type="hidden" asp-for="UserFirstName" />
+    <input type="hidden" asp-for="UserLastName" />
+
+    <div class="mb-3">
+        <label class="form-label">Personel</label>
+        <input type="text" class="form-control" value="@Model.UserFirstName @Model.UserLastName" disabled />
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Title" class="form-label">Ünvan</label>
+        <input asp-for="Title" class="form-control" />
+        <span asp-validation-for="Title" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="BranchId" class="form-label">Şube</label>
+        <select asp-for="BranchId" class="form-select" asp-items="@((SelectList)ViewBag.Branches)"></select>
+        <span asp-validation-for="BranchId" class="text-danger"></span>
+    </div>
+
+    <button class="btn btn-dark">Güncelle</button>
+    <a href="/Admin/Employee/Index" class="btn btn-outline-secondary">Vazgeç</a>
+</form>

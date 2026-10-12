@@ -1,0 +1,80 @@
+﻿@using CargoTrack.DTO.DTOs.DashboardDtos
+@using CargoTrack.WebUI.Helpers
+@using CargoTrack.WebUI.Models
+@using System.Globalization
+@model AdminDashboardDto
+@{
+    ViewData["Title"] = "Yönetim Paneli";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    // Kartlar: başlık, değer, açıklama, renk. Tıklanınca ilgili listeye giden kartlarda Url var.
+    var cards = new List<DashboardCardModel>
+    {
+        new() { Title = "Toplam Kargo", Value = Model.TotalCargoCount.ToString(), Hint = "Tüm kargolar", CssClass = "text-bg-primary", Url = "/Cargo/Index" },
+        new() { Title = "Aktif Kargo", Value = Model.ActiveCargoCount.ToString(), Hint = "Yolda olanlar", CssClass = "text-bg-info", Url = "/Cargo/Index?scope=Active" },
+        new() { Title = "Geciken Kargo", Value = Model.OverdueCargoCount.ToString(), Hint = "Tahmini tarihi geçti", CssClass = Model.OverdueCargoCount > 0 ? "text-bg-danger" : "text-bg-secondary" },
+        new() { Title = "Teslim Edilen", Value = Model.DeliveredCargoCount.ToString(), Hint = "Başarıyla teslim", CssClass = "text-bg-success" },
+        new() { Title = "Teslimat Oranı", Value = $"%{Model.DeliveryRatePercent:0.0}", Hint = "Teslim edilen / toplam", CssClass = "text-bg-success" },
+        new() { Title = "Aktif Şube", Value = Model.ActiveBranchCount.ToString(), Hint = "Kayıtlı şubeler", CssClass = "text-bg-dark", Url = "/Admin/Branch/Index" },
+        new() { Title = "Personel", Value = Model.EmployeeCount.ToString(), Hint = "Şubeye bağlı personel", CssClass = "text-bg-dark", Url = "/Admin/Employee/Index" }
+    };
+
+    // Çubuk listeleri: aynı _BarList partial'ı üç farklı veriyle kullanılır.
+    var traffic = new BarListModel
+    {
+        Title = "Son 7 Günlük Trafik (oluşturulan kargo)",
+        Items = Model.Last7Days.Select(d => new BarItemModel
+        {
+            Label = d.Date.ToString("dd.MM (ddd)", new CultureInfo("tr-TR")),
+            Value = d.Count,
+            CssClass = "bg-primary"
+        }).ToList()
+    };
+
+    var statuses = new BarListModel
+    {
+        Title = "Durum Dağılımı",
+        EmptyText = "Henüz kargo yok.",
+        Items = Model.StatusDistribution.Select(s => new BarItemModel
+        {
+            Label = EnumDisplay.Status(s.Status),
+            Value = s.Count,
+            CssClass = EnumDisplay.StatusBadge(s.Status)
+        }).ToList()
+    };
+
+    var branches = new BarListModel
+    {
+        Title = "En Yoğun 5 Şube (gelen + giden)",
+        EmptyText = "Henüz kargo yok.",
+        Items = Model.TopBranches.Select(b => new BarItemModel
+        {
+            Label = b.BranchName,
+            Value = b.CargoCount,
+            CssClass = "bg-warning"
+        }).ToList()
+    };
+}
+
+<h3>Yönetim Paneli</h3>
+
+<div class="row row-cols-2 row-cols-md-4 g-3 mb-4">
+    @foreach (var card in cards)
+    {
+        <div class="col">
+            @await Html.PartialAsync("~/Views/Shared/Dashboard/_StatCard.cshtml", card)
+        </div>
+    }
+</div>
+
+<div class="row g-3">
+    <div class="col-md-4">
+        @await Html.PartialAsync("~/Views/Shared/Dashboard/_BarList.cshtml", traffic)
+    </div>
+    <div class="col-md-4">
+        @await Html.PartialAsync("~/Views/Shared/Dashboard/_BarList.cshtml", statuses)
+    </div>
+    <div class="col-md-4">
+        @await Html.PartialAsync("~/Views/Shared/Dashboard/_BarList.cshtml", branches)
+    </div>
+</div>

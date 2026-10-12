@@ -1,0 +1,233 @@
+﻿@using CargoTrack.DTO.DTOs.DashboardDtos
+@using CargoTrack.Entity.Entities.Enums
+@using CargoTrack.WebUI.Helpers
+@using CargoTrack.WebUI.Models
+@model UserDashboardDto
+@{
+    ViewData["Title"] = "Panelim";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    var cards = new List<DashboardCardModel>
+    {
+        new() { Title = "Yoldaki Kargolarım", Value = Model.ActiveCargoCount.ToString(), Hint = "Aktif gönderi / alım", CssClass = "text-bg-info", Url = "/Cargo/Index?scope=Active" },
+        new() { Title = "Geçmiş Kargolarım", Value = Model.HistoryCargoCount.ToString(), Hint = "Teslim edilen / iade", CssClass = "text-bg-teal", Url = "/Cargo/Index?scope=History" }
+    };
+
+    var timeline = Model.LastCargoTimeline.OrderBy(m => m.MovementDate).ToList();
+    var lastIndex = timeline.Count - 1;
+    var lastDone = Model.LastCargo is not null
+                   && (Model.LastCargo.CargoStatus == CargoStatus.Delivered
+                       || Model.LastCargo.CargoStatus == CargoStatus.ReturnedToSender);
+}
+
+<style>
+    .code-chip {
+        display: inline-block;
+        background: #fff3e0;
+        color: #904d00;
+        border: 1px dashed #fd8b00;
+        border-radius: 8px;
+        padding: 4px 12px;
+        font-size: 20px;
+        font-weight: 700;
+        letter-spacing: .15em;
+    }
+
+    .code-hint {
+        display: block;
+        font-size: 12px;
+        color: #74777e;
+        margin-top: 2px;
+    }
+
+    .tl {
+        position: relative;
+        margin: 0;
+        padding: 4px 0 0;
+        list-style: none;
+    }
+
+    .tl-item {
+        position: relative;
+        padding: 0 0 22px 40px;
+    }
+
+        .tl-item:last-child {
+            padding-bottom: 0;
+        }
+
+        .tl-item::before {
+            content: '';
+            position: absolute;
+            left: 11px;
+            top: 24px;
+            bottom: -2px;
+            width: 2px;
+            background: #e2e8f0;
+        }
+
+        .tl-item:last-child::before {
+            display: none;
+        }
+
+    .tl-dot {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        background: #22c55e;
+    }
+
+        .tl-dot.current {
+            background: #fd8b00;
+        }
+
+        .tl-dot .material-symbols-outlined {
+            font-size: 14px;
+        }
+
+    .tl-title {
+        font-weight: 600;
+    }
+
+        .tl-title.current {
+            color: #fd8b00;
+        }
+
+    .tl-meta {
+        font-size: 14px;
+        color: #74777e;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 32px 16px;
+        color: #74777e;
+    }
+</style>
+
+<h3>Panelim</h3>
+
+<div class="row row-cols-1 row-cols-md-2 g-3 mb-4">
+    @foreach (var card in cards)
+    {
+        <div class="col">
+            @await Html.PartialAsync("~/Views/Shared/Dashboard/_StatCard.cshtml", card)
+        </div>
+    }
+</div>
+
+<h5>Aktif Kargolarım</h5>
+
+@if (!Model.ActiveCargos.Any())
+{
+    <div class="panel-card mb-4">
+        <div class="empty-state">
+            <span class="material-symbols-outlined" style="font-size:40px">inventory_2</span>
+            <p class="mt-2 mb-3">Şu anda yolda kargonuz yok.</p>
+            <a href="/Cargo/Create" class="app-btn">
+                <span class="material-symbols-outlined" style="font-size:18px">send</span>
+                Kargo Gönder
+            </a>
+        </div>
+    </div>
+}
+else
+{
+    <div class="table-responsive mb-4">
+        <table class="table align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>Takip No</th>
+                    <th>Rol</th>
+                    <th>Karşı Taraf</th>
+                    <th>Güzergâh</th>
+                    <th>Durum</th>
+                    <th>Tahmini Varış</th>
+                    <th>Teslimat Kodu</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var c in Model.ActiveCargos)
+                {
+                    <tr>
+                        <td class="fw-semibold">@c.TrackCode</td>
+                        <td>@(c.IsSender ? "Gönderici" : "Alıcı")</td>
+                        <td>@c.OtherPartyName</td>
+                        <td>@c.OriginBranchName → @c.DestinationBranchName</td>
+                        <td>
+                            <span class="badge @EnumDisplay.StatusBadge(c.CargoStatus)">@EnumDisplay.Status(c.CargoStatus)</span>
+                            @if (c.IsOverdue)
+                            {
+                                <span class="badge text-bg-danger">Gecikti</span>
+                            }
+                        </td>
+                        <td>@c.EstimatedArrivalDate.ToString("dd.MM.yyyy")</td>
+                        <td>
+                            @* Neden: Kod sadece alıcıya ve sadece "Dağıtıma Çıktı" iken doludur. *@
+                            @if (!string.IsNullOrEmpty(c.DeliveryCode))
+                            {
+                                <span class="code-chip">@c.DeliveryCode</span>
+                                <span class="code-hint">Kuryeye bu kodu söyleyin</span>
+                            }
+                            else
+                            {
+                                <span class="text-muted">-</span>
+                            }
+                        </td>
+                        <td class="text-end"><a class="btn btn-sm btn-outline-primary" href="/Cargo/Details/@c.Id">Detay</a></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+@if (Model.LastCargo is not null)
+{
+    <h5>Son Kargom</h5>
+    <div class="panel-card">
+        <div class="panel-card-head d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <span>
+                @Model.LastCargo.TrackCode
+                <span class="text-muted fw-normal">· @Model.LastCargo.OriginBranchName → @Model.LastCargo.DestinationBranchName</span>
+            </span>
+            <span class="badge @EnumDisplay.StatusBadge(Model.LastCargo.CargoStatus)">@EnumDisplay.Status(Model.LastCargo.CargoStatus)</span>
+        </div>
+        <div class="panel-card-body pb-3">
+            <p class="text-muted mb-3">Tahmini varış: <strong>@Model.LastCargo.EstimatedArrivalDate.ToString("dd.MM.yyyy")</strong></p>
+            <ul class="tl">
+                @for (var i = 0; i < timeline.Count; i++)
+                {
+                    var m = timeline[i];
+                    // Neden: Son hareket güncel adım (turuncu); kargo bittiyse o da yeşil olur.
+                    var isCurrent = i == lastIndex && !lastDone;
+                    <li class="tl-item">
+                        <span class="tl-dot @(isCurrent ? "current" : "")">
+                            <span class="material-symbols-outlined">@(isCurrent ? "local_shipping" : "check")</span>
+                        </span>
+                        <div class="tl-title @(isCurrent ? "current" : "")">@EnumDisplay.Status(m.NewStatus)</div>
+                        <div class="tl-meta">
+                            @m.MovementDate.ToString("dd.MM.yyyy HH:mm")
+                            @if (!string.IsNullOrEmpty(m.BranchName))
+                            {
+                                <span>· @m.BranchName</span>
+                            }
+                            @if (!string.IsNullOrEmpty(m.TransferCenterName))
+                            {
+                                <span>· @m.TransferCenterName</span>
+                            }
+                        </div>
+                    </li>
+                }
+            </ul>
+        </div>
+    </div>
+}

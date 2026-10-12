@@ -1,0 +1,107 @@
+﻿@{
+    var path = Context.Request.Path.Value ?? "";
+    // Neden: Bulunulan sayfanın menü bağlantısı turuncu zeminle vurgulanır.
+    string Active(string prefix) => path.StartsWith(prefix, StringComparison.OrdinalIgnoreCase) ? "active" : "";
+
+    var isAdmin = User.IsInRole("Admin");
+    var isManager = User.IsInRole("Manager");
+    var isUser = User.IsInRole("User");
+
+    // Neden: Admin'in çok sayıda yönetim sayfası var; menüyü tek satırda tutmak için açılır "Yönetim" menüsünde toplanır.
+    string[] manageMenus = { "/Admin/Branch", "/Admin/TransferCenter", "/Admin/Employee", "/Admin/CargoPrice", "/Admin/RoleAssign", "/Admin/About", "/Admin/AuditLog" };
+    var manageActive = manageMenus.Any(m => path.StartsWith(m, StringComparison.OrdinalIgnoreCase)) ? "active" : "";
+}
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - @CargoTrack.WebUI.Consts.Brand.Name</title>
+    <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/theme.css" asp-append-version="true" />
+</head>
+<body>
+    <nav class="app-nav">
+        <div class="app-nav-inner">
+            <a href="/" class="app-brand">
+                <span class="material-symbols-outlined">package_2</span>
+                @CargoTrack.WebUI.Consts.Brand.Name
+            </a>
+
+            <div class="app-links">
+                <a href="/" class="@(path == "/" ? "active" : "")">Ana Sayfa</a>
+
+                @if (User.Identity?.IsAuthenticated == true)
+                {
+                    if (isAdmin)
+                    {
+                        <a href="/Admin/Dashboard/Index" class="@Active("/Admin/Dashboard")">Panel</a>
+                        <a href="/Cargo/Index" class="@Active("/Cargo")">Kargolar</a>
+                        <a href="/Admin/Report/Index" class="@Active("/Admin/Report")">Raporlar</a>
+                        <div class="dropdown">
+                            <a href="#" class="dropdown-toggle @manageActive" data-bs-toggle="dropdown" aria-expanded="false">Yönetim</a>
+                            <ul class="dropdown-menu app-menu">
+                                <li><a class="dropdown-item @Active("/Admin/Branch")" href="/Admin/Branch/Index">Şubeler</a></li>
+                                <li><a class="dropdown-item @Active("/Admin/TransferCenter")" href="/Admin/TransferCenter/Index">Aktarma Merkezleri</a></li>
+                                <li><a class="dropdown-item @Active("/Admin/Employee")" href="/Admin/Employee/Index">Personel</a></li>
+                                <li><a class="dropdown-item @Active("/Admin/CargoPrice")" href="/Admin/CargoPrice/Index">Fiyatlar</a></li>
+                                <li><a class="dropdown-item @Active("/Admin/RoleAssign")" href="/Admin/RoleAssign/Index">Roller</a></li>
+                                <li><a class="dropdown-item @Active("/Admin/About")" href="/Admin/About/Index">Hakkımızda</a></li>
+                                <li><a class="dropdown-item @Active("/Admin/AuditLog")" href="/Admin/AuditLog/Index">Audit Log</a></li>
+
+                            </ul>
+                        </div>
+                    }
+                    else if (isManager)
+                    {
+                        <a href="/Manager/Dashboard/Index" class="@Active("/Manager/Dashboard")">Panel</a>
+                        <a href="/Cargo/Index" class="@Active("/Cargo")">Şube Kargoları</a>
+                    }
+                    else if (isUser)
+                    {
+                        <a href="/Dashboard/Index" class="@Active("/Dashboard")">Panelim</a>
+                        <a href="/Cargo/Index" class="@Active("/Cargo")">Kargolarım</a>
+                    }
+                }
+            </div>
+
+            <div class="app-right">
+                @if (User.Identity?.IsAuthenticated == true)
+                {
+                    <a href="/Cargo/Create" class="app-btn">
+                        <span class="material-symbols-outlined" style="font-size:18px">send</span>
+                        Kargo Gönder
+                    </a>
+                    <span class="app-user">@User.Identity.Name</span>
+                    @* Neden: Çıkış POST + anti-forgery ile yapılır (başka site linkle çıkış yaptıramasın). *@
+                    <form method="post" asp-controller="Login" asp-action="Logout" class="m-0">
+                        <button type="submit" class="app-btn app-btn-outline">Çıkış</button>
+                    </form>
+                }
+                else
+                {
+                    <a href="/Login/Index" class="app-btn app-btn-outline">Giriş Yap</a>
+                    <a href="/Register/Signup" class="app-btn">Kayıt Ol</a>
+                }
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <main role="main" class="pb-3 pt-4">
+            <partial name="_Alerts" />
+            @RenderBody()
+        </main>
+    </div>
+
+    <footer class="app-footer">
+        <span>© @DateTime.Now.Year @CargoTrack.WebUI.Consts.Brand.Company Tüm hakları saklıdır.</span>
+    </footer>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

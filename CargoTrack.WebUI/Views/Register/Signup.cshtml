@@ -1,0 +1,72 @@
+﻿@model RegisterUserDto
+@{
+    ViewData["Title"] = "Kayıt Ol";
+    Layout = "~/Views/Shared/_PublicLayout.cshtml";
+
+    // Neden: Tüm alanlar aynı görünümde olsun diye sınıf bir kez tanımlanır.
+    var input = "w-full border border-outline-variant rounded px-4 py-3 text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary bg-surface-bright h-[48px]";
+}
+
+<div class="max-w-2xl mx-auto">
+    <div class="text-center mb-stack-lg">
+        <h1 class="text-headline-lg text-on-background mb-2">Kayıt Ol</h1>
+        <p class="text-on-surface-variant">Kargo gönderip takip etmek için hesap oluşturun.</p>
+    </div>
+
+    <div class="bg-white rounded-lg shadow-sm border border-outline-variant p-6 md:p-8 relative overflow-hidden">
+        <div class="absolute -right-12 -top-12 opacity-5 pointer-events-none">
+            <span class="material-symbols-outlined text-[160px] text-primary">person_add</span>
+        </div>
+
+        <form method="post" class="grid grid-cols-1 md:grid-cols-2 gap-5 relative z-10">
+            <div>
+                <label class="block text-sm font-semibold text-on-background mb-1">Ad</label>
+                <input type="text" asp-for="FirstName" class="@input" />
+                <span class="text-error text-sm" asp-validation-for="FirstName"></span>
+            </div>
+            <div>
+                <label class="block text-sm font-semibold text-on-background mb-1">Soyad</label>
+                <input type="text" asp-for="LastName" class="@input" />
+                <span class="text-error text-sm" asp-validation-for="LastName"></span>
+            </div>
+            <div>
+                <label class="block text-sm font-semibold text-on-background mb-1">E-posta</label>
+                <input type="text" asp-for="Email" class="@input" />
+                <span class="text-error text-sm" asp-validation-for="Email"></span>
+            </div>
+            <div>
+                <label class="block text-sm font-semibold text-on-background mb-1">Kullanıcı Adı</label>
+                <input type="text" asp-for="UserName" class="@input" />
+                <span class="text-error text-sm" asp-validation-for="UserName"></span>
+            </div>
+            <div>
+                <label class="block text-sm font-semibold text-on-background mb-1">Şifre</label>
+                <input type="password" asp-for="Password" class="@input" />
+                <span class="text-error text-sm" asp-validation-for="Password"></span>
+            </div>
+            <div>
+                <label class="block text-sm font-semibold text-on-background mb-1">Şifre Tekrarı</label>
+                <input type="password" asp-for="ConfirmPassword" class="@input" />
+                <span class="text-error text-sm" asp-validation-for="ConfirmPassword"></span>
+            </div>
+
+            @if (!ViewData.ModelState.IsValid)
+            {
+                <div class="md:col-span-2 bg-error-container text-on-error-container px-4 py-3 rounded" asp-validation-summary="All"></div>
+            }
+
+            <div class="md:col-span-2">
+                <button type="submit"
+                        class="w-full bg-secondary-container text-on-primary px-8 py-3 rounded font-semibold flex items-center justify-center gap-2 hover:opacity-90 transition-opacity h-[48px] shadow-sm">
+                    <span class="material-symbols-outlined text-sm font-bold">how_to_reg</span>
+                    Kayıt Ol
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <p class="text-center text-on-surface-variant mt-6">
+        Zaten hesabın var mı?
+        <a href="/Login/Index" class="text-secondary font-bold hover:underline">Giriş Yap</a>
+    </p>
+</div>

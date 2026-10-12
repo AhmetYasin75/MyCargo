@@ -1,0 +1,83 @@
+﻿@{
+    ViewData["Title"] = "Kargo Takip";
+    Layout = "~/Views/Shared/_PublicLayout.cshtml";
+}
+
+<div class="text-center mb-stack-lg">
+    <h1 class="text-headline-xl text-on-background mb-4">Kargo Takip</h1>
+    <p class="text-body-lg text-on-surface-variant">Takip numaranızı girerek gönderinizin güncel durumunu görüntüleyebilirsiniz.</p>
+</div>
+
+<div class="bg-white rounded-lg shadow-sm border border-outline-variant p-6 md:p-8 max-w-3xl mx-auto mb-section-padding relative overflow-hidden">
+    <div class="absolute -right-16 -top-16 opacity-5 pointer-events-none">
+        <span class="material-symbols-outlined text-[200px] text-primary">local_shipping</span>
+    </div>
+    <div class="flex items-center gap-3 mb-6 relative z-10">
+        <div class="w-12 h-12 rounded-full bg-surface-container flex items-center justify-center text-primary">
+            <span class="material-symbols-outlined">inventory_2</span>
+        </div>
+        <h2 class="text-headline-md text-on-background">Kargo Takip Numarası</h2>
+    </div>
+
+    @if (ViewBag.error != null)
+    {
+        <div class="relative z-10 mb-4 flex items-center gap-2 bg-error-container text-on-error-container px-4 py-3 rounded">
+            <span class="material-symbols-outlined text-sm">error</span>
+            @ViewBag.error
+        </div>
+    }
+
+    @* Neden: Sadece sorgulama yapıldığı için GET formu yeterli; adres paylaşılabilir. *@
+    <form method="get" action="/Default/CargoDetails" class="flex flex-col md:flex-row gap-4 relative z-10">
+        <input name="trackCode" type="text" required maxlength="30"
+               class="flex-grow border border-outline-variant rounded px-4 py-3 text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary bg-surface-bright placeholder:text-outline h-[48px]"
+               placeholder="Örn: MYC-2026-123456" />
+        <button type="submit"
+                class="bg-secondary-container text-on-primary px-8 py-3 rounded font-semibold flex items-center justify-center gap-2 hover:opacity-90 transition-opacity h-[48px] whitespace-nowrap shadow-sm">
+            <span class="material-symbols-outlined text-sm font-bold">search</span>
+            Gönderiyi Sorgula
+        </button>
+    </form>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter">
+    <div class="lg:col-span-8">
+        <h3 class="text-headline-md text-on-background mb-stack-md">Kargo Durumları</h3>
+        <div class="flex flex-col gap-4">
+            <div class="bg-white rounded-lg border border-outline-variant border-l-4 border-l-surface-tint p-5">
+                <span class="bg-surface-container-high text-primary-container px-2 py-1 rounded-full text-status-label inline-flex items-center gap-1">
+                    <span class="material-symbols-outlined text-[14px]">local_shipping</span> Dağıtıma Çıktı
+                </span>
+                <p class="text-on-surface-variant mt-2">Kargonuz kuryede, bugün adresinize ulaştırılacak.</p>
+            </div>
+            <div class="bg-white rounded-lg border border-outline-variant border-l-4 border-l-secondary-container p-5">
+                <span class="bg-[#fff3e0] text-[#e65100] px-2 py-1 rounded-full text-status-label inline-flex items-center gap-1">
+                    <span class="material-symbols-outlined text-[14px]">swap_horiz</span> Transfer Merkezinde
+                </span>
+                <p class="text-on-surface-variant mt-2">Kargonuz varış şubesine giderken aktarma merkezinden geçiyor.</p>
+            </div>
+            <div class="bg-white rounded-lg border border-outline-variant border-l-4 border-l-[#4caf50] p-5">
+                <span class="bg-[#e8f5e9] text-[#2e7d32] px-2 py-1 rounded-full text-status-label inline-flex items-center gap-1">
+                    <span class="material-symbols-outlined text-[14px]">check_circle</span> Teslim Edildi
+                </span>
+                <p class="text-on-surface-variant mt-2">Kargonuz alıcıya teslimat kodu ile teslim edildi.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="lg:col-span-4 mt-stack-lg lg:mt-0 lg:pt-14">
+        <div class="bg-surface-container-low rounded-xl p-6 relative overflow-hidden h-full flex flex-col border border-surface-container shadow-sm">
+            <div class="absolute -right-4 -top-4 opacity-10 pointer-events-none">
+                <span class="material-symbols-outlined text-[120px]">help</span>
+            </div>
+            <div class="w-10 h-10 rounded-full bg-primary-fixed flex items-center justify-center text-primary-container mb-4 relative z-10 shadow-sm">
+                <span class="material-symbols-outlined text-lg">lightbulb</span>
+            </div>
+            <h3 class="text-headline-md text-on-background mb-3 relative z-10">Takip numaramı nereden bulabilirim?</h3>
+            <p class="text-on-surface-variant relative z-10">
+                Kargo oluşturulduğunda verilen <strong class="text-on-background font-semibold">MYC-yıl-numara</strong>
+                biçimindeki kodu kullanabilirsiniz. Giriş yaptıysanız kodunuzu "Kargolarım" sayfasında da görebilirsiniz.
+            </p>
+        </div>
+    </div>
+</div>

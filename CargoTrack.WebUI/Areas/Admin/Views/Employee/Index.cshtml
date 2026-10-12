@@ -1,0 +1,73 @@
+﻿@using CargoTrack.DTO.DTOs.Common
+@using CargoTrack.DTO.DTOs.EmployeeDtos
+@model PagedResult<ResultEmployeeDto>
+@{
+    ViewData["Title"] = "Personel";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var filter = (EmployeeFilterDto)ViewBag.Filter;
+    int count = (Model.PageNumber - 1) * Model.PageSize;
+}
+
+<h3>Personel</h3>
+
+<p class="text-muted">
+    Yeni personel, <a href="/Admin/RoleAssign/Index">Roller</a> ekranından kullanıcıya Manager rolü ve şube atanınca otomatik oluşur.
+</p>
+
+@* Arama ve filtre GET ile gönderilir, böylece sayfalama filtreyi korur *@
+<form method="get" class="row g-2 mb-3">
+    <div class="col-md-4">
+        <input type="text" name="search" value="@filter.Search" class="form-control"
+               placeholder="Ad, soyad, e-posta veya ünvan ara..." />
+    </div>
+
+    <div class="col-md-3">
+        <select name="branchId" class="form-select" asp-items="@((SelectList)ViewBag.Branches)">
+            <option value="">Tüm şubeler</option>
+        </select>
+    </div>
+
+    <div class="col-md-3">
+        <button class="btn btn-dark">Filtrele</button>
+        <a href="/Admin/Employee/Index" class="btn btn-outline-secondary">Temizle</a>
+    </div>
+</form>
+
+<table class="table table-bordered table-hover align-middle">
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>Ad Soyad</th>
+            <th>E-posta</th>
+            <th>Ünvan</th>
+            <th>Şube</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (!Model.Items.Any())
+        {
+            <tr>
+                <td colspan="6" class="text-center text-muted">Kayıt bulunamadı.</td>
+            </tr>
+        }
+
+        @foreach (var item in Model.Items)
+        {
+            count++;
+            <tr>
+                <td>@count</td>
+                <td>@item.UserFirstName @item.UserLastName</td>
+                <td>@item.UserEmail</td>
+                <td>@item.Title</td>
+                <td>@item.BranchName</td>
+                <td><a href="/Admin/Employee/Update/@item.Id" class="btn btn-info btn-sm">Güncelle</a></td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<div class="d-flex justify-content-between align-items-center">
+    <span class="text-muted">Toplam @Model.TotalCount kayıt</span>
+    <partial name="_Pagination" model="Model" />
+</div>

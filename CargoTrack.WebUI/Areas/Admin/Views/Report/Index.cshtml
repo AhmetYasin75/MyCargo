@@ -1,0 +1,156 @@
+﻿@using CargoTrack.DTO.DTOs.ReportDtos
+@using CargoTrack.WebUI.Models
+@model ReportDto
+@{
+    ViewData["Title"] = "Raporlar";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    var cards = new List<DashboardCardModel>
+    {
+        new() { Title = "Toplam Kargo", Value = Model.TotalCargoCount.ToString(), Hint = "Seçili aralıkta", CssClass = "text-bg-primary" },
+        new() { Title = "Teslim Edilen", Value = Model.DeliveredCount.ToString(), Hint = "Başarıyla teslim", CssClass = "text-bg-success" },
+        new() { Title = "Ort. Teslim Süresi", Value = $"{Model.AvgDeliveryHours:0.0} saat", Hint = "Gönderimden teslime", CssClass = "text-bg-info" },
+        new() { Title = "Zamanında Teslim", Value = $"%{Model.OnTimeRatePercent:0.0}", Hint = "Teslimler içinde", CssClass = "text-bg-success" },
+        new() { Title = "İade Oranı", Value = $"%{Model.ReturnRatePercent:0.0}", Hint = "Toplam kargo içinde", CssClass = Model.ReturnRatePercent > 0 ? "text-bg-warning" : "text-bg-secondary" }
+    };
+}
+
+<h3>Raporlar</h3>
+
+@* Neden: Sadece okuma yapıldığı için GET formu yeterli. *@
+<form method="get" class="row g-2 align-items-end mb-4">
+    <div class="col-auto">
+        <label class="form-label mb-0">Başlangıç</label>
+        <input type="date" name="From" class="form-control" value="@Model.From?.ToString("yyyy-MM-dd")" />
+    </div>
+    <div class="col-auto">
+        <label class="form-label mb-0">Bitiş</label>
+        <input type="date" name="To" class="form-control" value="@Model.To?.ToString("yyyy-MM-dd")" />
+    </div>
+    <div class="col-auto">
+        <button type="submit" class="btn btn-primary">Filtrele</button>
+        <a href="/Admin/Report/Index" class="btn btn-outline-secondary">Temizle</a>
+    </div>
+</form>
+
+<div class="row row-cols-2 row-cols-md-5 g-3 mb-4">
+    @foreach (var card in cards)
+    {
+        <div class="col">
+            @await Html.PartialAsync("~/Views/Shared/Dashboard/_StatCard.cshtml", card)
+        </div>
+    }
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="small text-uppercase text-muted">En çok gönderen şube</div>
+                <div class="fs-5 fw-semibold">@(Model.MostSendingBranch ?? "-")</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="small text-uppercase text-muted">En çok teslim eden şube</div>
+                <div class="fs-5 fw-semibold">@(Model.MostDeliveringBranch ?? "-")</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="small text-uppercase text-muted">En çok geciken şubeler</div>
+                @if (Model.MostDelayedBranches.Any())
+                {
+                    <ol class="mb-0 ps-3">
+                        @foreach (var b in Model.MostDelayedBranches)
+                        {
+                            <li>@b.BranchName <span class="badge text-bg-danger">@b.DelayedCount</span></li>
+                        }
+                    </ol>
+                }
+                else
+                {
+                    <div class="fs-5 fw-semibold">Geciken yok</div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<h5>Şube Performansı</h5>
+<div class="table-responsive mb-4">
+    <table class="table table-sm table-striped align-middle">
+        <thead>
+            <tr>
+                <th>Şube</th>
+                <th>Giden</th>
+                <th>Gelen</th>
+                <th>Teslim</th>
+                <th>Teslim %</th>
+                <th>Zamanında %</th>
+                <th>Geciken</th>
+                <th>İade</th>
+                <th>Ort. Süre (saat)</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var b in Model.Branches)
+            {
+                <tr>
+                    <td>@b.BranchName</td>
+                    <td>@b.SentCount</td>
+                    <td>@b.ReceivedCount</td>
+                    <td>@b.DeliveredCount</td>
+                    <td>%@b.DeliveryRatePercent.ToString("0.0")</td>
+                    <td>%@b.OnTimeRatePercent.ToString("0.0")</td>
+                    <td>@b.DelayedCount</td>
+                    <td>@b.ReturnedCount</td>
+                    <td>@b.AvgDeliveryHours.ToString("0.0")</td>
+                </tr>
+            }
+            @if (!Model.Branches.Any())
+            {
+                <tr><td colspan="9" class="text-muted">Şube yok.</td></tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<h5>Personel Performansı</h5>
+<div class="table-responsive">
+    <table class="table table-sm table-striped align-middle">
+        <thead>
+            <tr>
+                <th>Personel</th>
+                <th>Şube</th>
+                <th>Teslim</th>
+                <th>Başarısız</th>
+                <th>Başarı %</th>
+                <th>Toplam İşlem</th>
+                <th>Bugün</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var e in Model.Employees)
+            {
+                <tr>
+                    <td>@e.FullName</td>
+                    <td>@e.BranchName</td>
+                    <td>@e.DeliveredCount</td>
+                    <td>@e.FailedCount</td>
+                    <td>%@e.SuccessRatePercent.ToString("0.0")</td>
+                    <td>@e.TotalOperations</td>
+                    <td>@e.TodayOperations</td>
+                </tr>
+            }
+            @if (!Model.Employees.Any())
+            {
+                <tr><td colspan="7" class="text-muted">Bu aralıkta personel işlemi yok.</td></tr>
+            }
+        </tbody>
+    </table>
+</div>

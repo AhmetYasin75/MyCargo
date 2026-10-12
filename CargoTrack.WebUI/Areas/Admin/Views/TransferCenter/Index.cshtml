@@ -1,0 +1,69 @@
+﻿@using CargoTrack.DTO.DTOs.Common
+@using CargoTrack.DTO.DTOs.TransferCenterDtos
+@model PagedResult<ResultTransferCenterDto>
+@{
+    ViewData["Title"] = "Transfer Merkezleri";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var filter = (TransferCenterFilterDto)ViewBag.Filter;
+    int count = (Model.PageNumber - 1) * Model.PageSize;
+}
+
+<h3>Transfer Merkezleri</h3>
+
+@* Arama GET ile gönderilir, böylece sayfalama aramayı korur *@
+<form method="get" class="row g-2 mb-3">
+    <div class="col-md-4">
+        <input type="text" name="search" value="@filter.Search" class="form-control"
+               placeholder="Merkez adı veya şehir ara..." />
+    </div>
+    <div class="col-md-4">
+        <button class="btn btn-dark">Ara</button>
+        <a href="/Admin/TransferCenter/Index" class="btn btn-outline-secondary">Temizle</a>
+    </div>
+</form>
+
+<table class="table table-bordered table-hover align-middle">
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>Merkez Adı</th>
+            <th>Şehir</th>
+            <th>İşlemler</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (!Model.Items.Any())
+        {
+            <tr>
+                <td colspan="4" class="text-center text-muted">Kayıt bulunamadı.</td>
+            </tr>
+        }
+
+        @foreach (var item in Model.Items)
+        {
+            count++;
+            <tr>
+                <td>@count</td>
+                <td>@item.Name</td>
+                <td>@item.CityName</td>
+                <td>
+                    <a href="/Admin/TransferCenter/Update/@item.Id" class="btn btn-info btn-sm">Güncelle</a>
+
+                    @* Silme POST ile yapılır (anti-forgery token form tarafından otomatik eklenir) *@
+                    <form asp-area="Admin" asp-controller="TransferCenter" asp-action="Delete" asp-route-id="@item.Id"
+                          method="post" class="d-inline"
+                          onsubmit="return confirm('Silmek istediğinize emin misiniz?')">
+                        <button type="submit" class="btn btn-danger btn-sm">Sil</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<div class="d-flex justify-content-between align-items-center">
+    <span class="text-muted">Toplam @Model.TotalCount kayıt</span>
+    <partial name="_Pagination" model="Model" />
+</div>
+
+<a href="/Admin/TransferCenter/Create" class="btn btn-dark">Yeni Transfer Merkezi</a>

@@ -1,0 +1,35 @@
+﻿@using CargoTrack.WebUI.Models
+@model DashboardCardModel
+@{
+    // Neden: Kart verisindeki renk adı, şerit rengine ve ikona çevrilir.
+    // Her anlam için ayrı bir renk var ki yan yana duran kartlar birbirine benzemesin.
+    var css = Model.CssClass ?? "";
+    string accent = "#001e3c";
+    string icon = "package_2";
+
+    if (css.Contains("success")) { accent = "#2e7d32"; icon = "check_circle"; }
+    else if (css.Contains("danger")) { accent = "#ba1a1a"; icon = "warning"; }
+    else if (css.Contains("warning")) { accent = "#fd8b00"; icon = "schedule"; }
+    else if (css.Contains("info")) { accent = "#2563c9"; icon = "local_shipping"; }
+    else if (css.Contains("teal")) { accent = "#00838f"; icon = "percent"; }
+    else if (css.Contains("indigo")) { accent = "#5c4bb5"; icon = "domain"; }
+    else if (css.Contains("amber")) { accent = "#c77700"; icon = "groups"; }
+    else if (css.Contains("dark")) { accent = "#213145"; icon = "domain"; }
+    else if (css.Contains("secondary")) { accent = "#74777e"; icon = "hourglass_empty"; }
+}
+
+<div class="stat-card" style="--accent:@accent">
+    <div class="stat-icon"><span class="material-symbols-outlined">@icon</span></div>
+    <div>
+        <div class="stat-title">@Model.Title</div>
+        <div class="stat-value">@Model.Value</div>
+        @if (!string.IsNullOrEmpty(Model.Hint))
+        {
+            <div class="stat-hint">@Model.Hint</div>
+        }
+        @if (!string.IsNullOrEmpty(Model.Url))
+        {
+            <a class="stat-link" href="@Model.Url">Listeyi aç →</a>
+        }
+    </div>
+</div>

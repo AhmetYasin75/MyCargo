@@ -1,0 +1,54 @@
+﻿@using CargoTrack.DTO.DTOs.CargoPriceDtos
+@using CargoTrack.WebUI.Helpers
+@model UpdateCargoPriceDto
+@{
+    ViewData["Title"] = "Fiyat Kuralı Güncelle";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h3>Fiyat Kuralı Güncelle</h3>
+
+<form asp-area="Admin" asp-controller="CargoPrice" asp-action="Update" method="post">
+    <input type="hidden" asp-for="Id" />
+
+    @* Neden: Teslimat tipi ve bölge sadece bilgi amaçlı, değiştirilemez. Hata olup form yeniden açılırsa kaybolmasın diye hidden taşınır. *@
+    <input type="hidden" asp-for="DeliveryType" />
+    <input type="hidden" asp-for="Zone" />
+
+    <div class="row mb-3">
+        <div class="col-md-3">
+            <label class="form-label">Teslimat Tipi</label>
+            <input type="text" class="form-control" value="@EnumDisplay.Delivery(Model.DeliveryType)" disabled />
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">Bölge</label>
+            <input type="text" class="form-control" value="@EnumDisplay.Zone(Model.Zone)" disabled />
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col-md-3">
+            <label asp-for="BasePrice" class="form-label">Temel Ücret (₺)</label>
+            <input asp-for="BasePrice" type="number" step="0.01" min="0" class="form-control" />
+            <span asp-validation-for="BasePrice" class="text-danger"></span>
+        </div>
+        <div class="col-md-3">
+            <label asp-for="PricePerDesi" class="form-label">Desi Başına (₺)</label>
+            <input asp-for="PricePerDesi" type="number" step="0.01" min="0" class="form-control" />
+            <span asp-validation-for="PricePerDesi" class="text-danger"></span>
+        </div>
+        <div class="col-md-3">
+            <label asp-for="PricePerKg" class="form-label">Kg Başına (₺)</label>
+            <input asp-for="PricePerKg" type="number" step="0.01" min="0" class="form-control" />
+            <span asp-validation-for="PricePerKg" class="text-danger"></span>
+        </div>
+        <div class="col-md-3">
+            <label asp-for="InsuranceRatePercent" class="form-label">Sigorta Oranı (%)</label>
+            <input asp-for="InsuranceRatePercent" type="number" step="1" min="0" max="100" class="form-control" />
+            <span asp-validation-for="InsuranceRatePercent" class="text-danger"></span>
+        </div>
+    </div>
+
+    <button class="btn btn-dark">Güncelle</button>
+    <a href="/Admin/CargoPrice/Index" class="btn btn-outline-secondary">Vazgeç</a>
+</form>

@@ -1,0 +1,27 @@
+﻿@using CargoTrack.DTO.DTOs.TransferCenterDtos
+@model CreateTransferCenterDto
+@{
+    ViewData["Title"] = "Yeni Transfer Merkezi";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h3>Yeni Transfer Merkezi</h3>
+
+<form asp-area="Admin" asp-controller="TransferCenter" asp-action="Create" method="post">
+    <div class="mb-3">
+        <label asp-for="Name" class="form-label">Merkez Adı</label>
+        <input asp-for="Name" class="form-control" />
+        <span asp-validation-for="Name" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="CityId" class="form-label">Şehir</label>
+        <select asp-for="CityId" class="form-select" asp-items="@((SelectList)ViewBag.Cities)">
+            <option value="" disabled selected>--- Şehri Seçiniz ---</option>
+        </select>
+        <span asp-validation-for="CityId" class="text-danger"></span>
+    </div>
+
+    <button class="btn btn-dark">Kaydet</button>
+    <a href="/Admin/TransferCenter/Index" class="btn btn-outline-secondary">Vazgeç</a>
+</form>

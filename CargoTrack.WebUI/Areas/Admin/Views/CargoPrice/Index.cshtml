@@ -1,0 +1,60 @@
+﻿@using CargoTrack.DTO.DTOs.CargoPriceDtos
+@using CargoTrack.WebUI.Helpers
+@model List<ResultCargoPriceDto>
+@{
+    ViewData["Title"] = "Fiyat Kuralları";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h3>Fiyat Kuralları</h3>
+
+<div class="alert alert-info">
+    Ücret = temel ücret + (desi ve ağırlıktan büyük olan × birim fiyat) + sigorta.
+    Yapılan değişiklikler sadece <strong>bundan sonra oluşturulan</strong> kargolara uygulanır, mevcut kargoların ücreti değişmez.
+</div>
+
+<table class="table table-bordered table-hover align-middle">
+    <thead>
+        <tr>
+            <th>Teslimat Tipi</th>
+            <th>Bölge</th>
+            <th>Temel Ücret</th>
+            <th>Desi Başına</th>
+            <th>Kg Başına</th>
+            <th>Sigorta Oranı</th>
+            <th>Durum</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (!Model.Any())
+        {
+            <tr>
+                <td colspan="8" class="text-center text-muted">Fiyat kuralı bulunamadı.</td>
+            </tr>
+        }
+
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@EnumDisplay.Delivery(item.DeliveryType)</td>
+                <td>@EnumDisplay.Zone(item.Zone)</td>
+                <td>@item.BasePrice.ToString("N2") ₺</td>
+                <td>@item.PricePerDesi.ToString("N2") ₺</td>
+                <td>@item.PricePerKg.ToString("N2") ₺</td>
+                <td>%@item.InsuranceRatePercent.ToString("0")</td>
+                <td>
+                    @if (item.IsActive)
+                    {
+                        <span class="badge bg-success">Aktif</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-secondary">Pasif</span>
+                    }
+                </td>
+                <td><a href="/Admin/CargoPrice/Update/@item.Id" class="btn btn-info btn-sm">Güncelle</a></td>
+            </tr>
+        }
+    </tbody>
+</table>

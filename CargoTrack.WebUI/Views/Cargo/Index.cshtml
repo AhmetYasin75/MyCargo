@@ -1,0 +1,113 @@
+﻿@using CargoTrack.DTO.DTOs.Cargos
+@using CargoTrack.DTO.DTOs.Common
+@using CargoTrack.Entity.Entities.Enums
+@using CargoTrack.WebUI.Helpers
+@model PagedResult<ResultCargoDto>
+@{
+    ViewData["Title"] = "Kargolar";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var filter = (CargoFilterDto)ViewBag.Filter;
+}
+
+<h3>Kargolar</h3>
+
+@if (User.IsInRole("Admin") || User.IsInRole("Manager"))
+{
+    <p><a href="/Cargo/Create" class="btn btn-primary">+ Yeni Kargo</a></p>
+}
+
+@* Arama ve filtre formu: GET ile gönderilir, böylece adres çubuğundaki link paylaşılabilir ve sayfalama filtreyi korur *@
+<form method="get" class="row g-2 mb-3">
+    <div class="col-md-3">
+        <input type="text" name="search" value="@filter.Search" class="form-control"
+               placeholder="Takip no, kişi veya şube ara..." />
+    </div>
+
+    <div class="col-md-2">
+        <select name="status" class="form-select">
+            <option value="">Tüm durumlar</option>
+            @foreach (var s in Enum.GetValues<CargoStatus>())
+            {
+                <option value="@((int)s)" selected="@(filter.Status == s)">@EnumDisplay.Status(s)</option>
+            }
+        </select>
+    </div>
+
+    <div class="col-md-2">
+        <select name="scope" class="form-select">
+            <option value="All" selected="@(filter.Scope == CargoListScope.All)">Tümü</option>
+            <option value="Active" selected="@(filter.Scope == CargoListScope.Active)">Aktif (yolda)</option>
+            <option value="History" selected="@(filter.Scope == CargoListScope.History)">Geçmiş (tamamlanan)</option>
+            <option value="Problem" selected="@(filter.Scope == CargoListScope.Problem)">Sorunlu</option>
+        </select>
+    </div>
+
+    <div class="col-md-2">
+        <input type="date" name="dateFrom" value="@filter.DateFrom?.ToString("yyyy-MM-dd")" class="form-control" title="Başlangıç tarihi" />
+    </div>
+
+    <div class="col-md-2">
+        <input type="date" name="dateTo" value="@filter.DateTo?.ToString("yyyy-MM-dd")" class="form-control" title="Bitiş tarihi" />
+    </div>
+
+    <div class="col-md-1">
+        <select name="pageSize" class="form-select" title="Sayfa başına kayıt">
+            <option value="10" selected="@(filter.PageSize == 10)">10</option>
+            <option value="20" selected="@(filter.PageSize == 20)">20</option>
+            <option value="50" selected="@(filter.PageSize == 50)">50</option>
+        </select>
+    </div>
+
+    <div class="col-12">
+        <button class="btn btn-dark">Filtrele</button>
+        <a href="/Cargo/Index" class="btn btn-outline-secondary">Temizle</a>
+    </div>
+</form>
+
+<table class="table table-bordered table-hover align-middle">
+    <thead>
+        <tr>
+            <th>Takip No</th>
+            <th>Gönderici</th>
+            <th>Alıcı</th>
+            <th>Çıkış → Varış</th>
+            <th>Durum</th>
+            <th>Tahmini Teslim</th>
+            <th>Ücret</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (!Model.Items.Any())
+        {
+            <tr>
+                <td colspan="8" class="text-center text-muted">Kayıt bulunamadı.</td>
+            </tr>
+        }
+
+        @foreach (var item in Model.Items)
+        {
+            <tr>
+                <td><a href="/Cargo/Details/@item.Id">@item.TrackCode</a></td>
+                <td>@item.SenderFirstName @item.SenderLastName</td>
+                <td>@item.ReceiverFirstName @item.ReceiverLastName</td>
+                <td>@item.OriginBranchName → @item.DestinationBranchName</td>
+                <td>
+                    <span class="badge @EnumDisplay.StatusBadge(item.CargoStatus)">@EnumDisplay.Status(item.CargoStatus)</span>
+                    @if (item.IsOverdue)
+                    {
+                        <span class="badge bg-danger">Gecikmiş</span>
+                    }
+                </td>
+                <td>@item.EstimatedArrivalDate.ToString("dd.MM.yyyy")</td>
+                <td>@MoneyFormat.TL(item.Price)</td>
+                <td><a href="/Cargo/Details/@item.Id" class="btn btn-info btn-sm">Detay</a></td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<div class="d-flex justify-content-between align-items-center">
+    <span class="text-muted">Toplam @Model.TotalCount kayıt</span>
+    <partial name="_Pagination" model="Model" />
+</div>
