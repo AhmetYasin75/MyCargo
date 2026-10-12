@@ -3,7 +3,7 @@ ASP.NET Core 8 MVC ile geliştirilmiş, N-Layer mimarili, rol tabanlı uçtan uc
 Müşteri kargo gönderir, şube personeli durumu ilerletir, yönetici raporları izler; herkes takip numarasıyla
 kargosunu giriş yapmadan sorgulayabilir.
 > MyAcademy eğitimi kapsamında geliştirilen **CargoTrack** vaka çalışmasının tamamlanmış hâlidir.
-![Ana sayfa](docs/screenshots/01-ana-sayfa.png)
+
 ---
 ✨ Özellikler
 Herkese açık
